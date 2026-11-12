@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aarya's Birthday Wishlist 🎀</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- ================= PAGE 1: CLOSENESS CHECKER ================= -->
+    <div id="page-1" class="card">
+      <span class="badge">🌸 Welcome Cuties!</span>
+      <h1>Before we begin...</h1>
+      <p class="subtitle">How close are we really? Choose your level to enter my birthday wishlist!</p>
+
+      <div class="options-grid">
+        <button class="option-btn" onclick="selectCloseness('Extremely Close')">
+          <span class="emoji">☠️</span>
+          <div class="btn-text">
+            <strong>Extremely Close</strong>
+            <small>I Give You TMI and Traumatise You Daily</small>
+          </div>
+        </button>
+
+        <button class="option-btn" onclick="selectCloseness('Sibling')">
+          <span class="emoji">😈</span>
+          <div class="btn-text">
+            <strong>Sibling</strong>
+            <small>You're My Entire Childhood</small>
+          </div>
+        </button>
+
+        <button class="option-btn" onclick="selectCloseness('Good Friend')">
+          <span class="emoji">🥰</span>
+          <div class="btn-text">
+            <strong>Good Friend</strong>
+            <small>Whenever we see each other we smile and wave</small>
+          </div>
+        </button>
+
+        <button class="option-btn" onclick="selectCloseness('Acquaintance')">
+          <span class="emoji">🙈</span>
+          <div class="btn-text">
+            <strong>Junior/Senior/Seen me somewhere?</strong>
+            <small>We aren't that close, that I'd consider gifting you anything</small>
+          </div>
+        </button>
+      </div>
+    </div>
+
+
+    <!-- ================= PAGE 2A: BUDGET & CATEGORY TIERS (For Sibling & Extremely Close) ================= -->
+    <div id="page-2-tiers" class="card hidden">
+      <span class="badge" id="greeting-badge-tiers">✨ Yay, welcome!</span>
+      <h1>Select a Category</h1>
+      <p class="subtitle">Pick a budget or type of gift you'd like to check out.</p>
+
+      <div class="options-grid">
+        <button class="tier-card" onclick="openTier('handmade')">
+          <span class="emoji">💌</span>
+          <div class="tier-info">
+            <strong>From the Heart (Handmade)</strong>
+            <small>Letters, sketches, notes (Infinite contributors!)</small>
+          </div>
+        </button>
+
+        <button class="tier-card" onclick="openTier('small')">
+          <span class="emoji">🍫</span>
+          <div class="tier-info">
+            <strong>Sweet & Simple (Under ₹500)</strong>
+            <small>Cute books, stationery, bookmarks</small>
+          </div>
+        </button>
+
+        <button class="tier-card" onclick="openTier('cosmetics')">
+          <span class="emoji">💄</span>
+          <div class="tier-info">
+            <strong>Cosmetics & Skincare</strong>
+            <small>Mascara, lip tint, sheet masks</small>
+          </div>
+        </button>
+
+        <button class="tier-card" onclick="openTier('dream')">
+          <span class="emoji">👑</span>
+          <div class="tier-info">
+            <strong>The Splurge / Dream List</strong>
+            <small>Perfumes, clothes, accessories</small>
+          </div>
+        </button>
+
+        <button class="tier-card" onclick="openTier('bar')">
+          <span class="emoji">🍸</span>
+          <div class="tier-info">
+            <strong>The 21st Bar Menu</strong>
+            <small>Vodka, beer, and celebration drinks 🥂</small>
+          </div>
+        </button>
+      </div>
+
+      <button class="back-btn" onclick="showPage('page-1')">← Back to Closeness Check</button>
+    </div>
+
+
+    <!-- ================= PAGE 2B: NON-MONETARY ENGAGEMENT (For Juniors & Good Friends) ================= -->
+    <div id="page-2-engage" class="card hidden">
+      <span class="badge">Aww, that's so sweet you still want to do something for me! 🌸</span>
+      <h1>Drop a Thought!</h1>
+      <p class="subtitle">No physical gifts needed! Choose an option below to leave me a note or recommendation:</p>
+
+      <div class="options-grid" id="engage-container">
+        <!-- Dynamically filled via JavaScript -->
+      </div>
+
+      <button class="back-btn" onclick="showPage('page-1')">← Back to Closeness Check</button>
+    </div>
+
+
+    <!-- ================= PAGE 3: GIFT ITEMS LIST ================= -->
+    <div id="page-3" class="card hidden">
+      <span class="badge" id="tier-badge">🎁 Gift List</span>
+      <h1 id="tier-title">Category Items</h1>
+      <p class="subtitle">Click "Claim" on what you'd like to gift so others know!</p>
+
+      <div class="items-list" id="items-container">
+        <!-- Dynamically filled via JavaScript -->
+      </div>
+
+      <button class="back-btn" onclick="goBackFromItems()">← Back to Categories</button>
+    </div>
+
+  </div>
+
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    const SUPABASE_URL = "https://niwamcnfepgzngltnpok.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_Mr3Zo38NzM_zMRzZSl5KDg_m9I-jVve";
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let visitorCloseness = "";
+    let currentActiveTier = ""; 
+    // State storage now saves an ARRAY of names for multi-contributors!
+    const claimedState = {};
+
+    const giftData = {
+      handmade: [
+        { name: "Hand Made 💌", desc: "Write me a letter/ Make a card for me." },
+        { name: "Custom Spotify Playlist 🎶", desc: "A playlist matching my vibe." },
+        { name: "Praises 👑", desc: "Get my brother to say he's proud of me" },
+        { name: "Quick Doodle / Sketch 🎨", desc: "Use your Drawing skills to Make something." }
+      ],
+      small: [
+        { name: "Bindi ✨", desc: "Buy me some really crazy looking bindis" },
+        { name: "Bangles 🌸", desc: "I would be so happy if i get Bangles" },
+        { name: "Food/Snacks 🍫", desc: "Easiest way is to just feed me something sweet." }
+      ],
+      cosmetics: [
+        { name: "Shimmer Lipgloss/body oil ✨", desc: "Really want to try anything that Shimmers" },
+        { name: "Makeup/Skincare 💄", desc: "Whatever you think I should have in my makeup/skincare kit" },
+        { name: "Body Moisturizer 🧴", desc: "the least you can do is recommend me a good one so my skin doesnt look like dead cells" }
+      ],
+      dream: [
+        { name: "Perfume 🌸", desc: "love citrusy and floral fragrance (might as well recommend me one if you can't buy)" },
+        { name: "Edit/Pinterest 🎨", desc: "Can you Make a Really cool edit of me 😭" },
+        { name: "Book/Novel 📖", desc: "Any good fictional Read" },
+        { name: "Jwellery/Accessories ✨", desc: "Anything according to my/your Aesthetic" }
+      ],
+      bar: [
+        { name: "Smirnoff 🍸", desc: "Trying it once just to get over with this stuff" },
+        { name: "Beer/Cocktails/Mixers 🍻", desc: "Is there anything that tastes sweet and doesnt burn my intestines" }
+      ]
+    };
+
+    function selectCloseness(level) {
+      visitorCloseness = level;
+
+      if (level === 'Extremely Close' || level === 'Sibling') {
+        document.getElementById('greeting-badge-tiers').innerText = "🌸 Hello " + level + "!";
+        showPage('page-2-tiers');
+      } else {
+        setupEngagementOptions(level);
+        showPage('page-2-engage');
+      }
+    }
+
+    function setupEngagementOptions(level) {
+      const container = document.getElementById('engage-container');
+
+      let htmlContent = `
+        <button class="tier-card" onclick="submitResponse('Favorite Song / Genre')">
+          <span class="emoji">🎶</span>
+          <div class="tier-info">
+            <strong>Share Songs / Favorite Genre</strong>
+            <small>Discoveries from this year or top recommendations</small>
+          </div>
+        </button>
+
+        <button class="tier-card" onclick="submitResponse('Best Life Advice/Poem/Shayari')">
+          <span class="emoji">🗣️</span>
+          <div class="tier-info">
+            <strong>Any Life advice that helped you form a new perspective</strong>
+            <small>Poems/Shayaris that Moved something in you</small>
+          </div>
+        </button>
+
+        <button class="tier-card" onclick="submitResponse('Funny/Horror Incident / Crazy Tea')">
+          <span class="emoji">☕</span>
+          <div class="tier-info">
+            <strong>Funniest Incident or Crazy Tea</strong>
+            <small>Make me laugh with a wild story</small>
+          </div>
+        </button>
+      `;
+
+      if (level === 'Good Friend') {
+        htmlContent += `
+          <button class="tier-card" onclick="submitResponse('Cute Short Note / Memory')">
+            <span class="emoji">💌</span>
+            <div class="tier-info">
+              <strong>Write a Cute Short Note</strong>
+              <small>Write something you like about me or how you remember me</small>
+            </div>
+          </button>
+        `;
+      }
+
+      container.innerHTML = htmlContent;
+    }
+
+    function submitResponse(type) {
+      let name = prompt("Enter your name:");
+      if (name && name.trim() !== "") {
+        let msg = prompt(`Hi ${name}! Type your response for '${type}':`);
+        if (msg && msg.trim() !== "") {
+          alert("Aww, Cutu, thank you so much! Your note has been saved. 💖");
+        }
+      }
+    }
+
+    function showPage(pageId) {
+      document.getElementById('page-1').classList.add('hidden');
+      document.getElementById('page-2-tiers').classList.add('hidden');
+      document.getElementById('page-2-engage').classList.add('hidden');
+      document.getElementById('page-3').classList.add('hidden');
+      
+      document.getElementById(pageId).classList.remove('hidden');
+    }
+
+    function openTier(tierKey) {
+      currentActiveTier = tierKey;
+      showPage('page-3');
+      const container = document.getElementById('items-container');
+      container.innerHTML = ""; 
+
+      const titles = {
+        handmade: "From the Heart 💌",
+        small: "Sweet & Simple (Under ₹500) 🍫",
+        cosmetics: "Cosmetics & Skincare 💄",
+        dream: "The Splurge List 👑",
+        bar: "The 21st Bar Menu 🍸"
+      };
+      document.getElementById('tier-title').innerText = titles[tierKey];
+
+      const items = giftData[tierKey];
+      items.forEach((item, index) => {
+        const itemKey = `${tierKey}-${index}`;
+        const contributors = claimedState[itemKey] || [];
+        const hasClaimed = contributors.length > 0;
+
+        // Create the tag list with delete buttons
+        const contributorTags = contributors.map(name => `
+            <span class="contributor-tag">
+                ${name} 
+                <button onclick="event.stopPropagation(); unclaimItem('${itemKey}', '${name}')" class="remove-btn">✕</button>
+            </span>
+        `).join(', ');
+
+        // Formats the button text to show everyone who signed up!
+        let buttonText = "Claim / Add Name ➕";
+        if (hasClaimed) {
+          buttonText = "By: " + contributorTags;
+        }
+        container.innerHTML += `
+          <div class="item-row">
+            <div class="item-details">
+              <h4>${item.name}</h4>
+              <p>${item.desc}</p>
+            </div>
+            <button class="claim-btn ${hasClaimed ? 'claimed' : ''}" 
+                    id="btn-${tierKey}-${index}" 
+                    onclick="claimItem('${tierKey}', ${index})">
+              ${buttonText}
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function claimItem(tierKey, index) {
+      const itemKey = `${tierKey}-${index}`;
+      let name = prompt("Enter your name to join this gift item:");
+      
+      if (name && name.trim() !== "") {
+        if (!claimedState[itemKey]) {
+          claimedState[itemKey] = [];
+        }
+        // Add new name to the list without blocking others!
+        claimedState[itemKey].push(name.trim());
+        
+        // Refresh the tier view so the new name pops up instantly
+        openTier(tierKey);
+      }
+    }
+
+ function goBackFromItems() {
+    if (visitorCloseness === 'Extremely Close' || visitorCloseness === 'Sibling') {
+        showPage('page-2-tiers');
+    } else {
+        showPage('page-2-engage');
+    }
+}
+
+async function unclaimItem(itemKey, nameToRemove) {
+    // 1. Delete row from Supabase
+    const { error } = await supabaseClient
+        .from('claims')
+        .delete()
+        .eq('item_key', itemKey)
+        .eq('contributor_name', nameToRemove);
+
+    if (error) {
+        console.error("Error unclaiming item:", error);
+        alert("Could not remove claim. Try again!");
+        return;
+    }
+
+    // 2. Remove locally from state array
+    if (claimedState[itemKey]) {
+        claimedState[itemKey] = claimedState[itemKey].filter(name => name !== nameToRemove);
+        if (claimedState[itemKey].length === 0) {
+            delete claimedState[itemKey];
+        }
+    }
+
+    // 3. Re-render UI to reflect changes instantly
+     if (currentActiveTier) {
+        openTier(currentActiveTier);
+    }
+}
+  </script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+/* Color Palette Variables */
+:root {
+  --olive-green: #556B2F;      
+  --baby-pink: #FFD1DC;        
+  --accent-pink: #F4A2B8;      
+  --dark-text: #2D3748;        
+  --white: #FFFFFF;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+body {
+  background-color: var(--baby-pink);
+  color: var(--dark-text);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 12px;
+}
+
+.container {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Compact padding so cards don't force vertical scroll on mobile */
+.card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 18px 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  border: 2px solid var(--white);
+}
+
+.badge {
+  background-color: var(--baby-pink);
+  color: var(--olive-green);
+  font-weight: 700;
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+h1 {
+  color: var(--olive-green);
+  font-size: 19px;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 12.5px;
+  color: #666;
+  margin-bottom: 14px;
+  line-height: 1.3;
+}
+
+.options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.option-btn, .tier-card {
+  display: flex;
+  align-items: center;
+  background: var(--white);
+  border: 1.5px solid #F1D4DC;
+  padding: 9px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 2px 8px rgba(85, 107, 47, 0.05);
+  transition: all 0.2s ease-in-out;
+  width: 100%;
+}
+
+.option-btn:hover, .tier-card:hover {
+  background: #FFF5F7;
+  border-color: var(--accent-pink);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(85, 107, 47, 0.12);
+}
+
+.emoji {
+  font-size: 20px;
+  margin-right: 10px;
+}
+
+.btn-text strong, .tier-info strong {
+  display: block;
+  font-size: 13.5px;
+  color: var(--olive-green);
+}
+
+.btn-text small, .tier-info small {
+  font-size: 11px;
+  color: #718096;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--olive-green);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 14px;
+  display: inline-block;
+}
+
+/* Gift Items Scrollable Container */
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  max-height: 280px;
+  overflow-y: auto;
+  text-align: left;
+  margin-bottom: 8px;
+  padding-right: 4px;
+}
+
+.item-row {
+  background: #FAF9F6;
+  border: 1px solid #E2E8F0;
+  padding: 10px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-details h4 {
+  font-size: 13px;
+  color: var(--olive-green);
+  margin-bottom: 2px;
+}
+
+.item-details p {
+  font-size: 11px;
+  color: #718096;
+}
+
+.claim-btn {
+  background-color: var(--olive-green);
+  color: var(--white);
+  border: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.claim-btn:hover {
+  background-color: #3f5222;
+}
+
+.claim-btn.claimed {
+  background-color: #CBD5E0;
+  color: #4A5568;
+  cursor: not-allowed;
+}
+/* Contributor tag pills */
+.contributor-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fce7f3;
+  color: #be185d;
+  padding: 3px 10px;
+  border-radius: 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin: 2px 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Delete / Unclaim button inside the pill */
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: #e11d48;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.8rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease, color 0.1s ease;
+}
+
+.remove-btn:hover {
+  color: #9f1239;
+  transform: scale(1.15);
+}
