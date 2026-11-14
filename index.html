@@ -231,16 +231,29 @@
       container.innerHTML = htmlContent;
     }
 
-    function submitResponse(type) {
+    async function submitResponse(type) {
       let name = prompt("Enter your name:");
       if (name && name.trim() !== "") {
         let msg = prompt(`Hi ${name}! Type your response for '${type}':`);
         if (msg && msg.trim() !== "") {
-          alert("Aww, Cutu, thank you so much! Your note has been saved. 💖");
+          const { error } = await supabaseClient
+            .from('engagements')
+            .insert([{
+              closeness_level: visitorCloseness || 'Friend',
+              response_type: type,
+              author_name: name.trim(),
+              message: msg.trim()
+            }]);
+
+          if (error) {
+            console.error("Error saving note:", error);
+            alert("Oops! Couldn't save your note right now. Please try again.");
+          } else {
+            alert("Aww, Cutu, thank you so much! Your note has been saved. 💖");
+          }
         }
       }
     }
-
     function showPage(pageId) {
       document.getElementById('page-1').classList.add('hidden');
       document.getElementById('page-2-tiers').classList.add('hidden');
