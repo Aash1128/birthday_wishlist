@@ -263,12 +263,14 @@
       document.getElementById(pageId).classList.remove('hidden');
     }
 
-    function openTier(tierKey) {
-      currentActiveTier = tierKey;
-      showPage('page-3');
-      const container = document.getElementById('items-container');
-      container.innerHTML = ""; 
-
+   async function openTier(tierKey) {
+  currentActiveTier = tierKey;
+  showPage('page-3');
+  const container = document.getElementById('items-container');
+  container.innerHTML = "<p>Loading wishlist...</p>";
+  await loadClaims(false); // Fetch latest claims without re-triggering openTier
+  container.innerHTML = "";
+     
       const titles = {
         handmade: "From the Heart 💌",
         small: "Sweet & Simple (Under ₹500) 🍫",
@@ -313,7 +315,7 @@
       });
     }
     
-async function loadClaims() {
+async function loadClaims(shouldRender = true) {
   const { data, error } = await supabaseClient
     .from('claims')
     .select('*');
@@ -331,19 +333,20 @@ async function loadClaims() {
     claimedState[row.item_key].push(row.contributor_name);
   });
 
-  if (typeof currentActiveTier !== 'undefined' && currentActiveTier) {
+  if (shouldRender && typeof currentActiveTier !== 'undefined' && currentActiveTier) {
     openTier(currentActiveTier);
   }
 }
 async function claimItem(tierKey, index) {
   const itemKey = `${tierKey}-${index}`;
+  const itemName = giftData[tierKey][index].name;
   const name = prompt("Enter your name so Aarya knows who's gifting this! 🎁");
   
   if (!name || !name.trim()) return;
 
   const { error } = await supabaseClient
     .from('claims')
-    .insert([{ item_key: itemKey, contributor_name: name.trim() }]);
+    .insert([{ item_key: itemKey, item_name: itemName, contributor_name: name.trim() }]);
 
   if (error) {
     console.error("Error saving claim:", error);
