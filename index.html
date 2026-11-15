@@ -312,58 +312,73 @@
         `;
       });
     }
+    
+async function loadClaims() {
+  const { data, error } = await supabaseClient
+    .from('claims')
+    .select('*');
+    
+  if (error) {
+    console.error("Error loading claims:", error);
+    return;
+  }
 
-    function claimItem(tierKey, index) {
-      const itemKey = `${tierKey}-${index}`;
-      let name = prompt("Enter your name to join this gift item:");
-      
-      if (name && name.trim() !== "") {
-        if (!claimedState[itemKey]) {
-          claimedState[itemKey] = [];
-        }
-        // Add new name to the list without blocking others!
-        claimedState[itemKey].push(name.trim());
-        
-        // Refresh the tier view so the new name pops up instantly
-        openTier(tierKey);
-      }
+  claimedState = {};
+  data.forEach(row => {
+    if (!claimedState[row.item_key]) {
+      claimedState[row.item_key] = [];
     }
+    claimedState[row.item_key].push(row.contributor_name);
+  });
 
- function goBackFromItems() {
-    if (visitorCloseness === 'Extremely Close' || visitorCloseness === 'Sibling') {
-        showPage('page-2-tiers');
-    } else {
-        showPage('page-2-engage');
-    }
+  if (typeof currentActiveTier !== 'undefined' && currentActiveTier) {
+    openTier(currentActiveTier);
+  }
 }
+async function claimItem(tierKey, index) {
+  const itemKey = `${tierKey}-${index}`;
+  const name = prompt("Enter your name so Aarya knows who's gifting this! 🎁");
+  
+  if (!name || !name.trim()) return;
 
+  const { error } = await supabaseClient
+    .from('claims')
+    .insert([{ item_key: itemKey, contributor_name: name.trim() }]);
+
+  if (error) {
+    console.error("Error saving claim:", error);
+    alert("Oops! Couldn't save your claim. Try again!");
+  } else {
+    await loadClaims();
+  }
+}
 async function unclaimItem(itemKey, nameToRemove) {
-    // 1. Delete row from Supabase
-    const { error } = await supabaseClient
-        .from('claims')
-        .delete()
-        .eq('item_key', itemKey)
-        .eq('contributor_name', nameToRemove);
+  if (!confirm(`Remove ${nameToRemove}'s claim?`)) return;
 
-    if (error) {
-        console.error("Error unclaiming item:", error);
-        alert("Could not remove claim. Try again!");
-        return;
-    }
+  const { error } = await supabaseClient
+    .from('claims')
+    .delete()
+    .eq('item_key', itemKey)
+    .eq('contributor_name', nameToRemove);
 
-    // 2. Remove locally from state array
-    if (claimedState[itemKey]) {
-        claimedState[itemKey] = claimedState[itemKey].filter(name => name !== nameToRemove);
-        if (claimedState[itemKey].length === 0) {
-            delete claimedState[itemKey];
-        }
-    }
-
-    // 3. Re-render UI to reflect changes instantly
-     if (currentActiveTier) {
-        openTier(currentActiveTier);
-    }
+  if (error) {
+    console.error("Error unclaiming item:", error);
+    alert("Could not remove claim. Try again!");
+  } else {
+    await loadClaims();
+  }
 }
+
+function goBackFromItems() {
+  if (visitorCloseness === 'Extremely Close' || visitorCloseness === 'Sibling') {
+    showPage('page-2-tiers');
+  } else {
+    showPage('page-2-engage');
+  }
+}
+
+// Load saved claims immediately when the page opens
+loadClaims();
   </script>
 </body>
 </html>
